@@ -2,6 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { Press_Start_2P } from "next/font/google";
+
+const pixel = Press_Start_2P({
+  weight: "400",
+  subsets: ["latin"],
+});
 
 function getOrdinal(day: number) {
   if (day > 3 && day < 21) return day + "th";
@@ -21,8 +27,14 @@ const subtitles = [
 export default function Room() {
   const [dateString, setDateString] = useState("");
   const [subtitle, setSubtitle] = useState("");
-  const [timeString, setTimeString] = useState("");
-  const [currentHour, setCurrentHour] = useState<number | null>(null);
+
+  // ✅ Clock state (additive only)
+  const [hours, setHours] = useState("");
+  const [minutes, setMinutes] = useState("");
+  const [seconds, setSeconds] = useState("");
+  const [ampm, setAmpm] = useState("");
+  const [blink, setBlink] = useState(true);
+  const [lastHour, setLastHour] = useState<number | null>(null);
   const [hourChanged, setHourChanged] = useState(false);
 
   useEffect(() => {
@@ -46,34 +58,47 @@ export default function Room() {
 
     setSubtitle(randomSubtitle);
 
+    // ✅ Clock logic
     const updateTime = () => {
       const now = new Date();
 
-      const hours = String(now.getHours()).padStart(2, "0");
-      const minutes = String(now.getMinutes()).padStart(2, "0");
-      const seconds = String(now.getSeconds()).padStart(2, "0");
+      let h = now.getHours();
+      const m = String(now.getMinutes()).padStart(2, "0");
+      const s = String(now.getSeconds()).padStart(2, "0");
 
-      setTimeString(`${hours}:${minutes}:${seconds}`);
+      const period = h >= 12 ? "PM" : "AM";
+      h = h % 12 || 12;
 
-      if (currentHour !== null && now.getHours() !== currentHour) {
+      const formattedHours = String(h).padStart(2, "0");
+
+      setHours(formattedHours);
+      setMinutes(m);
+      setSeconds(s);
+      setAmpm(period);
+
+      setBlink((prev) => !prev);
+
+      if (lastHour !== null && now.getHours() !== lastHour) {
         setHourChanged(true);
-        setTimeout(() => setHourChanged(false), 600);
+        setTimeout(() => setHourChanged(false), 800);
       }
 
-      setCurrentHour(now.getHours());
+      setLastHour(now.getHours());
     };
 
     updateTime();
     const interval = setInterval(updateTime, 1000);
 
     return () => clearInterval(interval);
-  }, [currentHour]);
+
+  }, []); // ✅ stays empty (no structural changes)
 
   return (
     <main
       className="relative min-h-screen bg-cover bg-center flex flex-col items-center justify-center text-center px-6"
       style={{ backgroundImage: "url('/bg.jpg')" }}
     >
+
       {/* Top Left Date Card */}
       <div className="absolute top-6 left-6 flex items-center gap-3 bg-white/80 backdrop-blur-sm px-5 py-3 rounded-2xl shadow-md">
 
@@ -82,13 +107,31 @@ export default function Room() {
             {dateString}
           </h1>
 
-          <span
-            className={`mt-2 px-4 py-1 rounded-md bg-green-100/60 backdrop-blur-sm text-emerald-400 font-mono tracking-widest text-base shadow-inner transition-all duration-500 ${
-              hourChanged ? "animate-hourPop" : ""
-            }`}
+          {/* ✅ Retro Neon Digital Clock */}
+          <div
+            className={`
+              ${pixel.className}
+              mt-2 px-4 py-2 rounded-lg
+              bg-emerald-100/50
+              text-emerald-400
+              text-xs md:text-sm
+              tracking-widest
+              shadow-inner
+              transition-all duration-700
+              ${hourChanged ? "animate-hourPop" : ""}
+              neon-glow
+            `}
           >
-            {timeString}
-          </span>
+            {hours}
+            <span className={blink ? "opacity-100" : "opacity-20"}>:</span>
+            {minutes}
+            <span className={blink ? "opacity-100" : "opacity-20"}>:</span>
+            {seconds}{" "}
+            <span className="text-[8px] md:text-[10px] align-top">
+              {ampm}
+            </span>
+          </div>
+
         </div>
 
         <Image
@@ -98,6 +141,7 @@ export default function Room() {
           height={80}
           className="rounded-full object-cover"
         />
+
       </div>
 
       {/* Center Quote */}

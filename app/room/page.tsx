@@ -2,9 +2,15 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Press_Start_2P } from "next/font/google";
+import { Press_Start_2P, Meow_Script } from "next/font/google"; 
 
 const pixel = Press_Start_2P({
+  weight: "400",
+  subsets: ["latin"],
+});
+
+// ✅ Meow Script added
+const meow = Meow_Script({
   weight: "400",
   subsets: ["latin"],
 });
@@ -28,7 +34,6 @@ export default function Room() {
   const [dateString, setDateString] = useState("");
   const [subtitle, setSubtitle] = useState("");
 
-  // ✅ Clock state (additive only)
   const [hours, setHours] = useState("");
   const [minutes, setMinutes] = useState("");
   const [seconds, setSeconds] = useState("");
@@ -58,7 +63,6 @@ export default function Room() {
 
     setSubtitle(randomSubtitle);
 
-    // ✅ Clock logic
     const updateTime = () => {
       const now = new Date();
 
@@ -91,7 +95,7 @@ export default function Room() {
 
     return () => clearInterval(interval);
 
-  }, []); // ✅ stays empty (no structural changes)
+  }, []);
 
   return (
     <main
@@ -99,7 +103,21 @@ export default function Room() {
       style={{ backgroundImage: "url('/bg.jpg')" }}
     >
 
-      {/* Top Left Date Card */}
+<h1
+  className={`
+    ${meow.className}
+    absolute top-6 left-1/2
+    text-6xl md:text-7xl
+    text-[#86EFAC]
+    animate-softFloat
+  `}
+  style={{
+    transform: "translateX(-50%)",
+    textShadow: "0 2px 6px rgba(255,255,255,0.85), 0 0 12px rgba(134, 239, 172, 0.45)"
+  }}
+>
+  CozyBoard
+</h1>
       <div className="absolute top-6 left-6 flex items-center gap-3 bg-white/80 backdrop-blur-sm px-5 py-3 rounded-2xl shadow-md">
 
         <div className="flex flex-col text-left">
@@ -107,13 +125,12 @@ export default function Room() {
             {dateString}
           </h1>
 
-          {/* ✅ Retro Neon Digital Clock */}
           <div
             className={`
               ${pixel.className}
               mt-2 px-4 py-2 rounded-lg
-              bg-emerald-100/50
-              text-emerald-400
+             bg-emerald-50/60
+            text-emerald-300
               text-xs md:text-sm
               tracking-widest
               shadow-inner
@@ -144,7 +161,6 @@ export default function Room() {
 
       </div>
 
-      {/* Center Quote */}
       <p className="mt-3 text-lg text-pink-600">
         {subtitle}
       </p>

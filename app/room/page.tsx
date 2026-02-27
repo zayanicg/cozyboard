@@ -2,135 +2,102 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Press_Start_2P, Meow_Script } from "next/font/google"; 
+import { Meow_Script, Press_Start_2P } from "next/font/google";
+
+const meow = Meow_Script({
+  subsets: ["latin"],
+  weight: "400",
+});
 
 const pixel = Press_Start_2P({
-  weight: "400",
   subsets: ["latin"],
+  weight: "400",
 });
 
-// ✅ Meow Script added
-const meow = Meow_Script({
-  weight: "400",
-  subsets: ["latin"],
-});
-
-function getOrdinal(day: number) {
-  if (day > 3 && day < 21) return day + "th";
-  switch (day % 10) {
-    case 1: return day + "st";
-    case 2: return day + "nd";
-    case 3: return day + "rd";
-    default: return day + "th";
-  }
-}
-
-const subtitles = [
-  "A soft day to begin again.",
-  "Small steps still count.",
-];
-
-export default function Room() {
-  const [dateString, setDateString] = useState("");
-  const [subtitle, setSubtitle] = useState("");
-
-  const [hours, setHours] = useState("");
-  const [minutes, setMinutes] = useState("");
-  const [seconds, setSeconds] = useState("");
-  const [ampm, setAmpm] = useState("");
+export default function Home() {
+  const [time, setTime] = useState(new Date());
   const [blink, setBlink] = useState(true);
-  const [lastHour, setLastHour] = useState<number | null>(null);
+  const [lastHour, setLastHour] = useState(time.getHours());
   const [hourChanged, setHourChanged] = useState(false);
 
   useEffect(() => {
-    const today = new Date();
-
-    const weekday = today.toLocaleDateString("en-US", {
-      weekday: "long",
-    });
-
-    const month = today.toLocaleDateString("en-US", {
-      month: "long",
-    });
-
-    const day = today.getDate();
-    const suffix = getOrdinal(day);
-
-    setDateString(`${weekday}, ${month} ${suffix}`);
-
-    const randomSubtitle =
-      subtitles[Math.floor(Math.random() * subtitles.length)];
-
-    setSubtitle(randomSubtitle);
-
-    const updateTime = () => {
+    const interval = setInterval(() => {
       const now = new Date();
-
-      let h = now.getHours();
-      const m = String(now.getMinutes()).padStart(2, "0");
-      const s = String(now.getSeconds()).padStart(2, "0");
-
-      const period = h >= 12 ? "PM" : "AM";
-      h = h % 12 || 12;
-
-      const formattedHours = String(h).padStart(2, "0");
-
-      setHours(formattedHours);
-      setMinutes(m);
-      setSeconds(s);
-      setAmpm(period);
-
+      setTime(now);
       setBlink((prev) => !prev);
 
-      if (lastHour !== null && now.getHours() !== lastHour) {
+      if (now.getHours() !== lastHour) {
         setHourChanged(true);
-        setTimeout(() => setHourChanged(false), 800);
+        setLastHour(now.getHours());
+
+        setTimeout(() => setHourChanged(false), 700);
       }
-
-      setLastHour(now.getHours());
-    };
-
-    updateTime();
-    const interval = setInterval(updateTime, 1000);
+    }, 1000);
 
     return () => clearInterval(interval);
+  }, []); 
 
-  }, []);
+  const hours = time.getHours() % 12 || 12;
+  const minutes = time.getMinutes().toString().padStart(2, "0");
+  const seconds = time.getSeconds().toString().padStart(2, "0");
+  const ampm = time.getHours() >= 12 ? "PM" : "AM";
+
+  const dateString = time.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+
+  const subtitle = "Stay Cozy ✿";
 
   return (
     <main
       className="relative min-h-screen bg-cover bg-center flex flex-col items-center justify-center text-center px-6"
       style={{ backgroundImage: "url('/bg.jpg')" }}
     >
-
-<h1
-  className={`
-    ${meow.className}
-    absolute top-6 left-1/2
-    text-6xl md:text-7xl
-    text-[#86EFAC]
-    animate-softFloat
-  `}
-  style={{
-    transform: "translateX(-50%)",
-    textShadow: "0 2px 6px rgba(255,255,255,0.85), 0 0 12px rgba(134, 239, 172, 0.45)"
-  }}
->
-  CozyBoard
-</h1>
-      <div className="absolute top-6 left-6 flex items-center gap-3 bg-white/80 backdrop-blur-sm px-5 py-3 rounded-2xl shadow-md">
-
+      <div className="absolute top-4 md:top-6 left-1/2 -translate-x-1/2 flex flex-col items-center">
+        
+        <h1
+          className={`
+            ${meow.className}
+            absolute top-4 md:top-6 left-1/2
+            text-6xl md:text-7xl
+            text-[#86EFAC]
+            animate-softFloat
+            flex items-center
+          `}
+          style={{
+            transform: "translateX(-50%)",
+            textShadow:
+              "0 2px 6px rgba(255,255,255,0.85), 0 0 12px rgba(134, 239, 172, 0.45)"
+          }}
+        >
+          <span className="text-xl md:text-2xl text-rose-300 opacity-80 mr-2 -ml-1">
+            ✿
+          </span>
+  
+          CozyBoard 
+  
+          <span className="text-xl md:text-2xl text-rose-300 opacity-80 ml-2">
+             ✿
+          </span>
+        </h1>
+  
+      </div>
+  
+      {/* Date + Clock Card */}
+      <div className="absolute top-24 md:top-6 left-4 md:left-6 flex items-center gap-3 bg-white/80 backdrop-blur-sm px-5 py-3 rounded-2xl shadow-md">
         <div className="flex flex-col text-left">
-          <h1 className="text-2xl md:text-3xl font-semibold text-rose-300 leading-none">
+          <h2 className="text-2xl md:text-3xl font-semibold text-rose-300 leading-none">
             {dateString}
-          </h1>
-
+          </h2>
+  
           <div
             className={`
               ${pixel.className}
               mt-2 px-4 py-2 rounded-lg
-             bg-emerald-50/60
-            text-emerald-300
+              bg-emerald-50/60
+              text-emerald-300
               text-xs md:text-sm
               tracking-widest
               shadow-inner
@@ -148,9 +115,12 @@ export default function Room() {
               {ampm}
             </span>
           </div>
-
+  
+          <p className="mt-3 text-base md:text-lg font-semibold text-rose-300">
+            {subtitle}
+          </p>
         </div>
-
+  
         <Image
           src="/lucky.jpg"
           alt="lucky charm"
@@ -158,13 +128,8 @@ export default function Room() {
           height={80}
           className="rounded-full object-cover"
         />
-
       </div>
-
-      <p className="mt-3 text-lg text-pink-600">
-        {subtitle}
-      </p>
-
+  
     </main>
   );
 }

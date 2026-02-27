@@ -2,13 +2,12 @@
 
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
-import { Meow_Script, Press_Start_2P } from "next/font/google";
+import { Meow_Script, Press_Start_2P, Festive } from "next/font/google";
 
 const meow = Meow_Script({
   subsets: ["latin"],
   weight: "400",
 });
-import { Festive } from "next/font/google";
 
 const festive = Festive({
   subsets: ["latin"],
@@ -30,6 +29,23 @@ export default function Home() {
   const [position, setPosition] = useState({ x: 300, y: 300 });
   const [dragging, setDragging] = useState(false);
   const offset = useRef({ x: 0, y: 0 });
+
+  const [userName, setUserName] = useState("");
+  const [namePosition, setNamePosition] = useState({ x: 200, y: 200 });
+  const [draggingName, setDraggingName] = useState(false);
+  const nameOffset = useRef({ x: 0, y: 0 });
+
+  const clampPosition = (x: number, y: number) => {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    const maxX = width - 256;
+    const maxY = height - 220;
+
+    return {
+      x: Math.max(0, Math.min(x, maxX)),
+      y: Math.max(0, Math.min(y, maxY)),
+    };
+  };
 
   useEffect(() => {
     setTime(new Date());
@@ -56,8 +72,15 @@ export default function Home() {
   useEffect(() => {
     const savedPhoto = localStorage.getItem("cozyPhoto");
     const savedPosition = localStorage.getItem("cozyPhotoPosition");
+
     if (savedPhoto) setPhoto(savedPhoto);
     if (savedPosition) setPosition(JSON.parse(savedPosition));
+
+    const savedName = localStorage.getItem("cozyUserName");
+    const savedNamePosition = localStorage.getItem("cozyNamePosition");
+
+    if (savedName) setUserName(savedName);
+    if (savedNamePosition) setNamePosition(JSON.parse(savedNamePosition));
   }, []);
 
   useEffect(() => {
@@ -72,6 +95,14 @@ export default function Home() {
     localStorage.setItem("cozyPhotoPosition", JSON.stringify(position));
   }, [position]);
 
+  useEffect(() => {
+    localStorage.setItem("cozyUserName", userName);
+  }, [userName]);
+
+  useEffect(() => {
+    localStorage.setItem("cozyNamePosition", JSON.stringify(namePosition));
+  }, [namePosition]);
+
   const handleMouseDown = (e: React.MouseEvent) => {
     setDragging(true);
     offset.current = {
@@ -82,24 +113,78 @@ export default function Home() {
 
   const handleMouseMove = (e: MouseEvent) => {
     if (!dragging) return;
-    setPosition({
-      x: e.clientX - offset.current.x,
-      y: e.clientY - offset.current.y,
-    });
+
+    const newPos = clampPosition(
+      e.clientX - offset.current.x,
+      e.clientY - offset.current.y
+    );
+
+    setPosition(newPos);
   };
 
   const handleMouseUp = () => {
     setDragging(false);
   };
 
+  const clampNamePosition = (x: number, y: number) => {
+    const maxX = window.innerWidth - 220;
+    const maxY = window.innerHeight - 120;
+
+    return {
+      x: Math.max(0, Math.min(x, maxX)),
+      y: Math.max(0, Math.min(y, maxY)),
+    };
+  };
+
+  const handleNameMouseDown = (e: React.MouseEvent) => {
+    setDraggingName(true);
+    nameOffset.current = {
+      x: e.clientX - namePosition.x,
+      y: e.clientY - namePosition.y,
+    };
+  };
+
+  useEffect(() => {
+    const handleMove = (e: MouseEvent) => {
+      if (!draggingName) return;
+
+      const newPos = clampNamePosition(
+        e.clientX - nameOffset.current.x,
+        e.clientY - nameOffset.current.y
+      );
+
+      setNamePosition(newPos);
+    };
+
+    const handleUp = () => setDraggingName(false);
+
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseup", handleUp);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseup", handleUp);
+    };
+  }, [draggingName]);
+
   useEffect(() => {
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseup", handleMouseUp);
+
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
     };
   });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setPosition((prev) => clampPosition(prev.x, prev.y));
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   if (!time) return null;
 
@@ -123,25 +208,20 @@ export default function Home() {
     >
       <div className="absolute top-4 md:top-6 left-1/2 -translate-x-1/2 flex flex-col items-center">
         <h1
-          className={`
-            ${meow.className}
-            absolute top-4 md:top-6 left-1/2
-            text-6xl md:text-7xl
-            text-[#86EFAC]
-            animate-softFloat
-            flex items-center
-          `}
+          className={`${meow.className} absolute top-4 md:top-6 left-1/2 text-6xl md:text-7xl text-[#86EFAC] animate-softFloat flex items-center`}
           style={{
             transform: "translateX(-50%)",
             textShadow:
-              "0 2px 6px rgba(255,255,255,0.85), 0 0 12px rgba(134, 239, 172, 0.45)"
+              "0 2px 6px rgba(255,255,255,0.85), 0 0 12px rgba(134, 239, 172, 0.45)",
           }}
         >
           <span className="text-xl md:text-2xl text-rose-300 opacity-80 mr-2 -ml-1">
-            ✿</span>
+            ✿
+          </span>
           CozyBoard
           <span className="text-xl md:text-2xl text-rose-300 opacity-80 ml-2">
-             ✿</span>
+            ✿
+          </span>
         </h1>
       </div>
 
@@ -152,18 +232,9 @@ export default function Home() {
           </h2>
 
           <div
-            className={`
-              ${pixel.className}
-              mt-2 px-4 py-2 rounded-lg
-              bg-emerald-50/60
-              text-emerald-300
-              text-xs md:text-sm
-              tracking-widest
-              shadow-inner
-              transition-all duration-700
-              ${hourChanged ? "animate-hourPop" : ""}
-              neon-glow
-            `}
+            className={`${pixel.className} mt-2 px-4 py-2 rounded-lg bg-emerald-50/60 text-emerald-300 text-xs md:text-sm tracking-widest shadow-inner transition-all duration-700 ${
+              hourChanged ? "animate-hourPop" : ""
+            } neon-glow`}
           >
             {hours}
             <span className={blink ? "opacity-100" : "opacity-20"}>:</span>
@@ -238,10 +309,38 @@ export default function Home() {
             </label>
           )}
 
-<p className={`${festive.className} absolute bottom-2 left-1/2 -translate-x-1/2 text-lg text-black`}>
-  Little Memory ✿
-</p>
+          <p
+            className={`${festive.className} absolute bottom-2 left-1/2 -translate-x-1/2 text-lg text-black`}
+          >
+            Little Memory ✿
+          </p>
         </div>
+      </div>
+
+      <div
+        onMouseDown={handleNameMouseDown}
+        style={{
+          position: "absolute",
+          left: namePosition.x,
+          top: namePosition.y,
+          cursor: draggingName ? "grabbing" : "grab",
+        }}
+        className="relative"
+      >
+        <Image
+          src="/name.png"
+          alt="name plate"
+          width={200}
+          height={80}
+        />
+
+        <input
+          type="text"
+          value={userName}
+          onChange={(e) => setUserName(e.target.value)}
+          placeholder="Your Name ✿"
+          className={`${festive.className} absolute inset-0 w-full h-full bg-transparent text-black text-lg text-center outline-none`}
+        />
       </div>
     </main>
   );

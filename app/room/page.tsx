@@ -200,74 +200,86 @@ export default function Home() {
       <div className="absolute top-4 md:top-6 left-0 w-full flex flex-col items-center z-20">
         <h1 className={`${meow.className} text-6xl md:text-7xl text-[#86EFAC] text-center`}>CozyBoard</h1>
 
-        {/* Favorite Links Card */}
-        <div className="mt-6 w-[90%] max-w-md mx-auto 
-          bg-[repeating-linear-gradient(45deg,#dcfce7,#dcfce7_10px,#bbf7d0_10px,#bbf7d0_20px)]
-          backdrop-blur-sm rounded-2xl p-4 shadow-lg flex flex-col">
+      {/* Favorite Links Card */}
+<div className="mt-6 w-[85%] max-w-sm mx-auto 
+  bg-[repeating-linear-gradient(45deg,#dcfce7,#dcfce7_10px,#bbf7d0_10px,#bbf7d0_20px)]
+  backdrop-blur-sm rounded-2xl p-3 shadow-lg flex flex-col">
 
-          <h3 className="text-xl md:text-2xl font-bold mb-3 text-center text-green-700">
-            Favorite Places ✿
-          </h3>
+  <h3 className="text-lg md:text-xl font-bold mb-2 text-center text-green-700">
+    Favorite Places ✿
+  </h3>
 
-          <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto mb-3">
-            {favLinks.map((link, i) => (
-              <div key={i} className="flex items-center gap-2 bg-white/70 px-3 py-1 rounded-xl shadow-sm max-w-full">
-                <a
-                  href={link.url}
-                  target="_blank"
-                  className="font-medium truncate max-w-[100px] md:max-w-[140px] hover:underline text-green-700"
-                >
-                  {link.name}
-                </a>
-                <button
-                  onClick={() => {
-                    const newName = prompt("Edit name", link.name);
-                    const newURL = prompt("Edit URL", link.url);
-                    if (newName && newURL) {
-                      setFavLinks(prev =>
-                        prev.map((l, idx) =>
-                          idx === i ? { name: newName, url: newURL } : l
-                        )
-                      );
-                    }
-                  }}
-                  className="px-2 py-1 rounded text-white bg-green-400 hover:bg-green-500 text-xs"
-                >
-                  ✎
-                </button>
-                <button
-                  onClick={() => removeFavLink(i)}
-                  className="px-2 py-1 rounded text-white bg-green-400 hover:bg-green-500 text-xs"
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
-          </div>
+  {/* ✅ SCROLLABLE LINKS CONTAINER */}
+  <div className="overflow-y-auto max-h-40 mb-2 flex flex-col gap-2 pr-1">
+    {favLinks.map((link, i) => (
+      <div
+        key={i}
+        className="flex items-center justify-between gap-2 bg-white/70 px-3 py-1.5 rounded-xl shadow-sm"
+      >
+        <a
+          href={link.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium truncate max-w-[120px] hover:underline text-green-700 text-sm"
+        >
+          {link.name}
+        </a>
 
-          <div className="flex flex-col md:flex-row gap-2 w-full">
-            <input
-              type="text"
-              placeholder="Name"
-              value={newLinkName}
-              onChange={e => setNewLinkName(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-green-300 outline-none text-green-700 bg-white/70"
-            />
-            <input
-              type="text"
-              placeholder="URL"
-              value={newLinkURL}
-              onChange={e => setNewLinkURL(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl border border-green-300 outline-none text-green-700 bg-white/70"
-            />
-            <button
-              onClick={addFavLink}
-              className="w-full md:w-auto bg-green-400 text-white px-4 py-2 rounded-xl hover:bg-green-500 transition"
-            >
-              Add
-            </button>
-          </div>
+        <div className="flex gap-1">
+          <button
+            onClick={() => {
+              const newName = prompt("Edit name", link.name);
+              const newURL = prompt("Edit URL", link.url);
+              if (newName && newURL) {
+                setFavLinks(prev =>
+                  prev.map((l, idx) =>
+                    idx === i ? { name: newName, url: newURL } : l
+                  )
+                );
+              }
+            }}
+            className="px-2 py-1 rounded text-white bg-green-400 hover:bg-green-500 text-xs"
+          >
+            ✎
+          </button>
+
+          <button
+            onClick={() => removeFavLink(i)}
+            className="px-2 py-1 rounded text-white bg-green-400 hover:bg-green-500 text-xs"
+          >
+            ✕
+          </button>
         </div>
+      </div>
+    ))}
+  </div>
+
+  {/* INPUT SECTION */}
+  <div className="flex flex-col md:flex-row gap-2 w-full">
+    <input
+      type="text"
+      placeholder="Name"
+      value={newLinkName}
+      onChange={e => setNewLinkName(e.target.value)}
+      className="w-full px-2 py-1.5 rounded-xl border border-green-300 outline-none text-green-700 bg-white/70 text-sm"
+    />
+
+    <input
+      type="text"
+      placeholder="URL"
+      value={newLinkURL}
+      onChange={e => setNewLinkURL(e.target.value)}
+      className="w-full px-2 py-1.5 rounded-xl border border-green-300 outline-none text-green-700 bg-white/70 text-sm"
+    />
+
+    <button
+      onClick={addFavLink}
+      className="w-full md:w-auto bg-green-400 text-white px-3 py-1.5 rounded-xl hover:bg-green-500 transition text-sm"
+    >
+      Add
+    </button>
+  </div>
+</div>
       </div>
 
       {/* Clock */}
@@ -331,6 +343,103 @@ export default function Home() {
         <Image src="/name.png" alt="name plate" width={200} height={80} />
         <input type="text" value={userName} onChange={e => setUserName(e.target.value)} placeholder="Your Name ✿" className={`${festive.className} absolute inset-0 w-full h-full bg-transparent text-black text-2xl text-center outline-none`} />
       </div>
+
+   {/* Mood Tracker Card */}
+<div className="mood-card">
+  <h3 className="text-sm font-bold text-pink-400 mb-2">Mood Tracker ✿</h3>
+
+  {/* Mood Buttons */}
+  <div className="flex gap-2 mb-3">
+    <img src="/mood-excited.png" alt="excited" onClick={() => chooseMood("excited")} />
+    <img src="/mood-sad.png" alt="sad" onClick={() => chooseMood("sad")} />
+    <img src="/mood-angry.png" alt="angry" onClick={() => chooseMood("angry")} />
+    <img src="/mood-chill.png" alt="chill" onClick={() => chooseMood("chill")} />
+  </div>
+
+  {/* Quote */}
+  {quote && <p className="text-xs text-pink-400 text-center italic mb-2">{quote}</p>}
+
+ {/* Weekly Mood Row */}
+ <div className="mood-row">
+  {["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map((day) => (
+    <div key={day}>
+      <span>{day}</span>
+      <span style={{ fontSize: "1.2rem", color: "#f28ab2" }}>
+        {moodHistory[day] ? 
+          moodHistory[day] === "excited" ? "😊" :
+          moodHistory[day] === "sad" ? "😔" :
+          moodHistory[day] === "angry" ? "😡" :
+          moodHistory[day] === "chill" ? "😌" :
+          <span style={{ fontSize: "0.85rem", color: "#f28ab2" }}>✿</span>
+        : <span style={{ fontSize: "0.85rem", color: "#f28ab2" }}>✿</span>}
+      </span>
+    </div>
+  ))}
+</div>
+</div>
+
+{/* Mood Effects */}
+{effect && (
+  <div className="mood-effect">
+    {effect === "sad" &&
+      Array.from({ length: 60 }).map((_, i) => (
+        <div
+          key={i}
+          className="rain"
+          style={{
+            left: `${Math.random() * 100}%`,
+            top: `${-10 - Math.random() * 50}px`,
+            animationDuration: `${0.8 + Math.random() * 0.8}s`,
+          }}
+        ></div>
+      ))}
+    {effect === "excited" &&
+      Array.from({ length: 40 }).map((_, i) => (
+        <div
+          key={i}
+          className="confetti"
+          style={{
+            left: `${Math.random() * 100}%`,
+            top: `${-10 - Math.random() * 50}px`,
+            animationDuration: `${1.5 + Math.random() * 2}s`,
+            transform: `rotate(${Math.random() * 360}deg)`,
+          }}
+        >
+          {["🎉", "✨", "🎊", "💖"][Math.floor(Math.random() * 4)]}
+        </div>
+      ))}
+    {effect === "angry" &&
+      Array.from({ length: 40 }).map((_, i) => (
+        <div
+          key={i}
+          className="spark"
+          style={{
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            animationDuration: `${0.6 + Math.random() * 0.8}s`,
+            transform: `rotate(${Math.random() * 360}deg)`,
+          }}
+        >
+          {["🔥", "⚡", "💥"][Math.floor(Math.random() * 3)]}
+        </div>
+      ))}
+    {effect === "chill" &&
+      Array.from({ length: 30 }).map((_, i) => (
+        <div
+          key={i}
+          className="leaf"
+          style={{
+            left: `${Math.random() * 100}%`,
+            top: `${-10 - Math.random() * 50}px`,
+            animationDuration: `${3 + Math.random() * 2}s`,
+            transform: `rotate(${Math.random() * 360}deg)`,
+          }}
+        >
+          🍃
+        </div>
+      ))}
+  </div>
+)}
     </main>
   );
 }

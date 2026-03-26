@@ -40,6 +40,30 @@ export default function Home() {
   const [newLinkName, setNewLinkName] = useState("");
   const [newLinkURL, setNewLinkURL] = useState("");
 
+  // ---------- To-Do List ----------
+const [tasks, setTasks] = useState<{ text: string; done: boolean }[]>([]);
+const [newTask, setNewTask] = useState("");
+
+// ---------- Deleting Tasks ----------
+const [deletingTaskIndexes, setDeletingTaskIndexes] = useState<number[]>([]);
+
+const deleteTask = (index: number) => {
+  setDeletingTaskIndexes(prev => [...prev, index]);
+
+  setTimeout(() => {
+    setTasks(prev => prev.filter((_, i) => i !== index));
+    setDeletingTaskIndexes(prev => prev.filter(i => i !== index));
+
+    // Optional: create a poof
+    const poof = document.createElement("div");
+    poof.className = "poof";
+    poof.style.left = `${Math.random() * window.innerWidth}px`;
+    poof.style.top = `${Math.random() * window.innerHeight}px`;
+    document.body.appendChild(poof);
+    setTimeout(() => document.body.removeChild(poof), 500);
+  }, 500);
+};
+
   const quotes: Record<string, string[]> = {
     excited: ["Your happiness is contagious ✨", "Celebrate every small win 🎉", "Joy looks good on you 🌈"],
     sad: ["Even the darkest clouds pass ☁️", "Storms pass, cozy stays 🌙", "Rest. Tomorrow will feel softer 🌙"],
@@ -62,6 +86,9 @@ export default function Home() {
     const savedMood = localStorage.getItem("cozyMoodHistory");
     if (savedMood) setMoodHistory(JSON.parse(savedMood));
 
+    const savedTasks = localStorage.getItem("cozyTasks");
+    if (savedTasks) setTasks(JSON.parse(savedTasks));
+
     setNamePosition({ x: 20, y: window.innerHeight - 120 });
   }, []);
 
@@ -82,6 +109,10 @@ export default function Home() {
   useEffect(() => {
     localStorage.setItem("cozyMoodHistory", JSON.stringify(moodHistory));
   }, [moodHistory]);
+
+  useEffect(() => {
+    localStorage.setItem("cozyTasks", JSON.stringify(tasks));
+  }, [tasks]);
 
   // ---------- Clock Interval ----------
   useEffect(() => {
@@ -122,6 +153,31 @@ export default function Home() {
     setFavLinks((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const toggleTask = (index: number, e?: React.MouseEvent) => {
+    setTasks(prev =>
+      prev.map((task, i) =>
+        i === index ? { ...task, done: !task.done } : task
+      )
+    );
+  
+    // ✨ sparkle
+    if (e) {
+      const rect = (e.target as HTMLElement).getBoundingClientRect();
+  
+      const newSparkle = {
+        id: Date.now(),
+        x: rect.left + rect.width / 2,
+        y: rect.top,
+      };
+  
+      setSparkles(prev => [...prev, newSparkle]);
+  
+      setTimeout(() => {
+        setSparkles(prev => prev.filter(s => s.id !== newSparkle.id));
+      }, 800);
+    }
+  };
+
   // ---------- Draggable Helpers ----------
   const clampPosition = (x: number, y: number) => {
     const width = window.innerWidth;
@@ -160,6 +216,8 @@ export default function Home() {
     setDraggingName(true);
     nameOffset.current = { x: e.clientX - namePosition.x, y: e.clientY - namePosition.y };
   };
+
+  const [sparkles, setSparkles] = useState<{ id: number; x: number; y: number }[]>([]);
 
   useEffect(() => {
     const handleMove = (e: MouseEvent) => {
@@ -440,6 +498,76 @@ export default function Home() {
       ))}
   </div>
 )}
+
+{/* To-Do List */}
+<div className="absolute left-4 top-1/2 w-64 bg-white/80 backdrop-blur-sm p-4 rounded-2xl shadow-md -translate-y-1/2"
+  style={{ backgroundImage: "url('/to-do-bg.jpg')" }}
+>
+ 
+  <h3 className="text-sm font-bold text-pink-400 mb-2 text-center">To-Do ✿</h3>
+
+  {/* Input */}
+  <div className="flex gap-2 mb-3">
+    <input
+      type="text"
+      value={newTask}
+      onChange={(e) => setNewTask(e.target.value)}
+      placeholder="New task..."
+      className="flex-1 px-2 py-1 rounded-lg border text-sm"
+    />
+    <button
+      onClick={() => {
+        if (!newTask) return;
+        setTasks(prev => [...prev, { text: newTask, done: false }]);
+        setNewTask("");
+      }}
+      className="bg-pink-300 px-2 rounded-lg text-white"
+    >
+      +
+    </button>
+  </div>
+
+  {/* Tasks */}
+  <div className="flex flex-col gap-2 max-h-40 overflow-y-auto">
+    {tasks.map((task, i) => (
+      <div
+        key={i}
+        onClick={(e) => toggleTask(i, e)}
+        className={`flex items-center justify-between px-2 py-1 rounded-lg cursor-pointer transition
+        ${task.done ? "bg-pink-100 line-through opacity-60" : "bg-white"}`}
+      >
+        <span className="text-sm">{task.text}</span>
+        <span className="text-pink-300 text-xs">
+          {task.done ? "✓" : "✿"}
+        </span>
+
+          {/* Delete button */}
+          <button
+            onClick={() => deleteTask(i)}
+            className="text-pink-300 text-xs px-1"
+          >
+            ✕
+          </button>
+      </div>
+    ))}
+  </div>
+</div>
+
+{/* ✨ Sparkles */}
+{sparkles.map(s => (
+  <div
+    key={s.id}
+    style={{
+      position: "fixed",
+      left: s.x,
+      top: s.y,
+      pointerEvents: "none",
+      animation: "fadeOut 0.8s ease-out",
+    }}
+  >
+    ✨
+  </div>
+))}
     </main>
   );
 }

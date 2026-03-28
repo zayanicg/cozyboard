@@ -35,6 +35,16 @@ export default function Home() {
   // ---------- Quotes ----------
   const [quote, setQuote] = useState("");
 
+  // ---------- Weather ----------
+  const [weather, setWeather] = useState<{
+    temp: number;
+    feels: number;
+    condition: string;
+    emoji: string;
+    city: string;
+    isDay: boolean;
+  } | null>(null);
+
   // ---------- Favorite Links ----------
   const [favLinks, setFavLinks] = useState<{ name: string; url: string }[]>([]);
   const [newLinkName, setNewLinkName] = useState("");
@@ -91,6 +101,79 @@ const deleteTask = (index: number) => {
 
     setNamePosition({ x: 20, y: window.innerHeight - 120 });
   }, []);
+
+  // ---------- Fetch Weather ----------
+useEffect(() => {
+    async function getWeather() {
+      try {
+        // 1️⃣ Get user's location
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+  
+          // 2️⃣ Fetch weather with local timezone
+          const res = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=apparent_temperature&temperature_unit=fahrenheit&timezone=auto`
+          );
+          const data = await res.json();
+  
+          const current = data.current_weather;
+          const now = new Date();
+          const currentHour = now.getHours();
+  
+          // 3️⃣ Get local "feels like" from hourly apparent_temperature
+          const feels = data.hourly?.apparent_temperature?.[currentHour] ?? current.temperature;
+  
+          // 4️⃣ Map weather code → emoji & condition
+          let emoji = "🌤️";
+          let condition = "Clear";
+          const code = current.weathercode;
+  
+          if ([0].includes(code)) {
+            emoji = "☀️";
+            condition = "Sunny";
+          } else if ([1, 2, 3].includes(code)) {
+            emoji = "🌤️";
+            condition = "Cloudy";
+          } else if ([45, 48].includes(code)) {
+            emoji = "🌫️";
+            condition = "Foggy";
+          } else if ([51, 53, 55, 61, 63, 65].includes(code)) {
+            emoji = "🌧️";
+            condition = "Rainy";
+          } else if ([71, 73, 75].includes(code)) {
+            emoji = "❄️";
+            condition = "Snowy";
+          } else if ([95, 96, 99].includes(code)) {
+            emoji = "⛈️";
+            condition = "Stormy";
+          }
+  
+          // 5️⃣ Get city name via Nominatim (OpenStreetMap)
+          const geoRes = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
+          );
+          const geoData = await geoRes.json();
+          const city = geoData.address?.city || geoData.address?.town || geoData.address?.village || "Your City";
+  
+          // 6️⃣ Update state
+          setWeather({
+            temp: Math.round(current.temperature),
+            feels: Math.round(feels),
+            condition,
+            emoji,
+            city,
+            isDay: current.is_day === 1,
+          });
+        });
+      } catch (err) {
+        console.error("Weather fetch failed", err);
+      }
+    }
+  
+    getWeather();
+  }, []);
+
 
   // ---------- Save data ----------
   useEffect(() => {
@@ -349,10 +432,34 @@ const deleteTask = (index: number) => {
             {minutes}<span className={blink ? "opacity-100" : "opacity-20"}>:</span>
             {seconds} <span className="text-[8px] md:text-[10px] align-top">{ampm}</span>
           </div>
-          <p className="mt-3 text-base md:text-lg font-semibold text-rose-300">{subtitle}</p>
+         {/* Weather */}
+         {weather && (
+  <div className="mt-2 flex flex-col text-emerald-400 text-sm md:text-base">
+
+    {/* Row 1 */}
+    <div className="flex items-center gap-2">
+      <span className="text-lg">{weather.emoji}</span>
+      <span className="font-semibold">{weather.temp}°F</span>
+      <span className="opacity-70">{weather.condition}</span>
+    </div>
+
+    {/* Row 2 */}
+    <div className="flex items-center gap-2 opacity-80">
+      <span>Feels like {weather.feels}°F</span>
+      <span>•</span>
+      <span>{weather.city}</span>
+    </div>
+
+  </div>
+)}
+
+<p className="mt-1 text-base md:text-lg font-semibold text-rose-300">
+  {subtitle}
+</p>
         </div>
         <Image src="/lucky.jpg" alt="lucky charm" width={80} height={80} className="rounded-full object-cover"/>
-      </div>
+
+</div>
 
      {/* Fixed Polaroid (Bottom-right) */}
 <div

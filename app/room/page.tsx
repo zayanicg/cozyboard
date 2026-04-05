@@ -81,6 +81,69 @@ const deleteTask = (index: number) => {
     chill: ["Peace is powerful ✨", "Stay cozy and present 🌿", "Calm mind, warm heart ☁️"],
   };
 
+
+// ---------- Mini Games ----------
+const [tttBoard, setTttBoard] = useState<(null | "X" | "O")[]>(Array(9).fill(null));
+const [tttTurn, setTttTurn] = useState<"X" | "O">("X");
+const [tttWinner, setTttWinner] = useState<null | "X" | "O">(null);
+
+const [emojiCount, setEmojiCount] = useState<number[]>([0, 0, 0, 0, 0]);
+const emojis = ["😊","🎉","🌸","✨","🍃"];
+
+// Memory Game (optional, uses uploaded photo)
+const [memoryCards, setMemoryCards] = useState<string[]>([]);
+const [flipped, setFlipped] = useState<number[]>([]);
+const [matched, setMatched] = useState<number[]>([]);
+
+// ---------- Tic-Tac-Toe Handler ----------
+const handleTttClick = (i: number) => {
+  if (tttBoard[i] || tttWinner) return;
+  const newBoard = [...tttBoard];
+  newBoard[i] = tttTurn;
+  setTttBoard(newBoard);
+  setTttTurn(tttTurn === "X" ? "O" : "X");
+
+  const lines = [
+    [0,1,2],[3,4,5],[6,7,8],
+    [0,3,6],[1,4,7],[2,5,8],
+    [0,4,8],[2,4,6]
+  ];
+  for (const [a,b,c] of lines) {
+    if (newBoard[a] && newBoard[a] === newBoard[b] && newBoard[a] === newBoard[c]) {
+      setTttWinner(newBoard[a]);
+      return;
+    }
+  }
+};
+
+// ---------- Emoji Handler ----------
+const handleEmojiClick = (i: number) => {
+  const newCounts = [...emojiCount];
+  newCounts[i] += 1;
+  setEmojiCount(newCounts);
+};
+
+// ---------- Memory Game Setup ----------
+useEffect(() => {
+  if (!photo) return;
+  const cards = [photo, photo]; // duplicate for matching
+  setMemoryCards(cards.sort(() => Math.random() - 0.5));
+  setFlipped([]);
+  setMatched([]);
+}, [photo]);
+
+const handleCardClick = (index: number) => {
+  if (flipped.includes(index) || matched.includes(index)) return;
+  const newFlipped = [...flipped, index];
+  setFlipped(newFlipped);
+
+  if (newFlipped.length === 2) {
+    if (memoryCards[newFlipped[0]] === memoryCards[newFlipped[1]]) {
+      setMatched([...matched, ...newFlipped]);
+    }
+    setTimeout(() => setFlipped([]), 800);
+  }
+};
   // ---------- Load data ----------
   useEffect(() => {
     setTime(new Date());
@@ -675,6 +738,48 @@ useEffect(() => {
     ✨
   </div>
 ))}
+
+{/* Mini Games Card (Top-Right) */}
+<div className="absolute top-4 right-4 w-56 bg-white/80 backdrop-blur-sm p-3 rounded-2xl shadow-lg z-30">
+  <h3 className="text-sm font-bold text-pink-400 mb-2 text-center">Mini Games ✿</h3>
+
+{/* Tic-Tac-Toe (Minimal Cozy) */}
+<div className="flex flex-col items-center">
+  <div className="grid grid-cols-3 gap-2 mb-2">
+    {tttBoard.map((cell, i) => (
+      <div
+        key={i}
+        onClick={() => handleTttClick(i)}
+        className="w-12 h-12 flex items-center justify-center 
+        bg-pink-50 hover:bg-pink-100 rounded-lg 
+        text-lg font-bold text-pink-400 
+        cursor-pointer transition"
+      >
+        {cell}
+      </div>
+    ))}
+  </div>
+
+  {/* Turn / Winner */}
+  <p className="text-xs text-pink-400">
+    {tttWinner ? `Winner: ${tttWinner} ✿` : `Turn: ${tttTurn}`}
+  </p>
+
+  {/* Reset Button */}
+  <button
+    onClick={() => {
+      setTttBoard(Array(9).fill(null));
+      setTttWinner(null);
+      setTttTurn("X");
+    }}
+    className="mt-2 text-xs text-pink-300 hover:text-pink-400 transition"
+  >
+    reset ✿
+  </button>
+</div>
+
+</div>
+
     </main>
   );
 }

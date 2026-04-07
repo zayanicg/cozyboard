@@ -90,6 +90,13 @@ const [tttWinner, setTttWinner] = useState<null | "X" | "O">(null);
 const [emojiCount, setEmojiCount] = useState<number[]>([0, 0, 0, 0, 0]);
 const emojis = ["😊","🎉","🌸","✨","🍃"];
 
+// ---------- Pet ----------
+const [pet, setPet] = useState("🐹");
+const [petMood, setPetMood] = useState(5);
+
+const faces = ["😢","😐","😊","😄","😍"];
+
+
 // Memory Game (optional, uses uploaded photo)
 const [memoryCards, setMemoryCards] = useState<string[]>([]);
 const [flipped, setFlipped] = useState<number[]>([]);
@@ -162,8 +169,16 @@ const handleCardClick = (index: number) => {
     const savedTasks = localStorage.getItem("cozyTasks");
     if (savedTasks) setTasks(JSON.parse(savedTasks));
 
-    setNamePosition({ x: 20, y: window.innerHeight - 120 });
+    const savedPet = localStorage.getItem("cozyPet");
+    if (savedPet) setPet(savedPet);
+  
+    const savedPetMood = localStorage.getItem("cozyPetMood");
+    if (savedPetMood) setPetMood(Number(savedPetMood));
+
+    setNamePosition({ x: 20, y: window.innerHeight - 140 });
   }, []);
+
+
 
   // ---------- Fetch Weather ----------
 useEffect(() => {
@@ -260,6 +275,20 @@ useEffect(() => {
     localStorage.setItem("cozyTasks", JSON.stringify(tasks));
   }, [tasks]);
 
+  useEffect(() => {
+    localStorage.setItem("cozyPet", pet);
+    localStorage.setItem("cozyPetMood", petMood.toString());
+  }, [pet, petMood]);
+
+  // ---------- Pet Mood Decay ----------
+useEffect(() => {
+    const interval = setInterval(() => {
+      setPetMood(prev => Math.max(prev - 1, 1));
+    }, 5000);
+  
+    return () => clearInterval(interval);
+  }, []);
+
   // ---------- Clock Interval ----------
   useEffect(() => {
     if (!time) return;
@@ -298,15 +327,20 @@ useEffect(() => {
   const removeFavLink = (index: number) => {
     setFavLinks((prev) => prev.filter((_, i) => i !== index));
   };
+  
+  const feedPet = () => {
+    setPetMood(prev => Math.min(prev + 1, 5));
+  }; 
 
   const toggleTask = (index: number, e?: React.MouseEvent) => {
+    // ✅ Toggle task done state
     setTasks(prev =>
       prev.map((task, i) =>
         i === index ? { ...task, done: !task.done } : task
       )
     );
   
-    // ✨ sparkle
+    // ✨ sparkle effect (your original feature)
     if (e) {
       const rect = (e.target as HTMLElement).getBoundingClientRect();
   
@@ -355,7 +389,7 @@ useEffect(() => {
   const clampNamePosition = (x: number, y: number) => {
     const width = window.innerWidth;
     const height = window.innerHeight;
-    return { x: Math.max(0, Math.min(x, width - 220)), y: Math.max(0, Math.min(y, height - 120)) };
+    return { x: Math.max(0, Math.min(x, width - 180)), y: Math.max(0, Math.min(y, height - 100)) };
   };
 
   const handleNameMouseDown = (e: React.MouseEvent) => {
@@ -399,12 +433,21 @@ useEffect(() => {
   }
 
   return (
-    <main className="relative min-h-screen bg-cover bg-center" style={{ backgroundImage: "url('/bg.jpg')" }}>
-      {/* Header & Favorite Links */}
-      <div className="absolute top-4 md:top-6 left-0 w-full flex flex-col items-center z-20">
-        <h1 className={`${meow.className} text-6xl md:text-7xl text-[#86EFAC] text-center`}>CozyBoard</h1>
+   // <main className="relative min-h-screen bg-cover bg-center" style={{ backgroundImage: "url('/bg.jpg')" }}>
+   
+   <main
+   className="relative min-h-screen bg-cover bg-center overflow-hidden
+              scale-[0.85] sm:scale-[0.95] md:scale-100 origin-top"
+   style={{ backgroundImage: "url('/bg.jpg')" }}
+ >
+   {/* Header & Favorite Links */}
+<div className="absolute top-4 md:top-6 left-0 w-full flex flex-col items-center z-20">
+  
+  <h1 className={`${meow.className} text-4xl sm:text-6xl md:text-7xl text-[#86EFAC] text-center`}>
+    CozyBoard
+  </h1>
 
-      {/* Favorite Links Card */}
+{/* Favorite Links Card */}
 <div className="mt-6 w-[85%] max-w-sm mx-auto 
   bg-[repeating-linear-gradient(45deg,#dcfce7,#dcfce7_10px,#bbf7d0_10px,#bbf7d0_20px)]
   backdrop-blur-sm rounded-2xl p-3 shadow-lg flex flex-col">
@@ -413,81 +456,81 @@ useEffect(() => {
     Favorite Places ✿
   </h3>
 
-  {/* ✅ SCROLLABLE LINKS CONTAINER */}
-  <div className="overflow-y-auto max-h-40 mb-2 flex flex-col gap-2 pr-1">
-    {favLinks.map((link, i) => (
-      <div
-        key={i}
-        className="flex items-center justify-between gap-2 bg-white/70 px-3 py-1.5 rounded-xl shadow-sm"
-      >
-        <a
-          href={link.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-medium truncate max-w-[120px] hover:underline text-green-700 text-sm"
-        >
-          {link.name}
-        </a>
-
-        <div className="flex gap-1">
-          <button
-            onClick={() => {
-              const newName = prompt("Edit name", link.name);
-              const newURL = prompt("Edit URL", link.url);
-              if (newName && newURL) {
-                setFavLinks(prev =>
-                  prev.map((l, idx) =>
-                    idx === i ? { name: newName, url: newURL } : l
-                  )
-                );
-              }
-            }}
-            className="px-2 py-1 rounded text-white bg-green-400 hover:bg-green-500 text-xs"
-          >
-            ✎
-          </button>
-
-          <button
-            onClick={() => removeFavLink(i)}
-            className="px-2 py-1 rounded text-white bg-green-400 hover:bg-green-500 text-xs"
-          >
-            ✕
-          </button>
-        </div>
-      </div>
-    ))}
-  </div>
-
-  {/* INPUT SECTION */}
-  <div className="flex flex-col md:flex-row gap-2 w-full">
-    <input
-      type="text"
-      placeholder="Name"
-      value={newLinkName}
-      onChange={e => setNewLinkName(e.target.value)}
-      className="w-full px-2 py-1.5 rounded-xl border border-green-300 outline-none text-green-700 bg-white/70 text-sm"
-    />
-
-    <input
-      type="text"
-      placeholder="URL"
-      value={newLinkURL}
-      onChange={e => setNewLinkURL(e.target.value)}
-      className="w-full px-2 py-1.5 rounded-xl border border-green-300 outline-none text-green-700 bg-white/70 text-sm"
-    />
-
-    <button
-      onClick={addFavLink}
-      className="w-full md:w-auto bg-green-400 text-white px-3 py-1.5 rounded-xl hover:bg-green-500 transition text-sm"
+ {/* ✅ SCROLLABLE LINKS CONTAINER */}
+<div className="overflow-y-auto max-h-40 mb-2 flex flex-col gap-2 pr-1">
+  {favLinks.map((link, i) => (
+    <div
+      key={i}
+      className="flex items-center justify-between gap-2 bg-white/70 px-3 py-1.5 rounded-xl shadow-sm"
     >
-      Add
-    </button>
-  </div>
-</div>
+      <a
+        href={link.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="font-medium truncate max-w-[120px] hover:underline text-green-700 text-sm"
+      >
+        {link.name}
+      </a>
+
+      <div className="flex gap-1">
+        <button
+          onClick={() => {
+            const newName = prompt("Edit name", link.name);
+            const newURL = prompt("Edit URL", link.url);
+            if (newName && newURL) {
+              setFavLinks(prev =>
+                prev.map((l, idx) =>
+                  idx === i ? { name: newName, url: newURL } : l
+                )
+              );
+            }
+          }}
+          className="px-2 py-1 rounded text-white bg-green-400 hover:bg-green-500 text-xs"
+        >
+          ✎
+        </button>
+
+        <button
+          onClick={() => removeFavLink(i)}
+          className="px-2 py-1 rounded text-white bg-green-400 hover:bg-green-500 text-xs"
+        >
+          ✕
+        </button>
       </div>
+    </div>
+  ))}
+</div>
+
+{/* ✅ ADD NEW LINK INPUT (OUTSIDE MAP) */}
+<div className="flex gap-2 mt-2">
+  <input
+    type="text"
+    placeholder="Name"
+    value={newLinkName}
+    onChange={(e) => setNewLinkName(e.target.value)}
+    className="flex-1 px-2 py-1 rounded text-xs border"
+  />
+  <input
+    type="text"
+    placeholder="URL"
+    value={newLinkURL}
+    onChange={(e) => setNewLinkURL(e.target.value)}
+    className="flex-1 px-2 py-1 rounded text-xs border"
+  />
+  <button
+    onClick={addFavLink}
+    className="bg-green-400 text-white px-2 rounded text-xs"
+  >
+    +
+  </button>
+</div>
+</div>
+</div>
+
+     
 
       {/* Clock */}
-      <div className="absolute top-24 md:top-6 left-4 md:left-6 flex items-center gap-3 bg-white/80 backdrop-blur-sm px-5 py-3 rounded-2xl shadow-md">
+<div className="absolute top-28 sm:top-20 md:top-6 left-2 sm:left-4 md:left-6 flex items-center gap-3 bg-white/80 backdrop-blur-sm px-5 py-3 rounded-2xl shadow-md">
         <div className="flex flex-col text-left">
           <h2 className="text-2xl md:text-3xl font-semibold text-rose-300 leading-none">{dateString}</h2>
           <div className={`${pixel.className} mt-2 px-4 py-2 rounded-lg bg-emerald-50/60 text-emerald-300 text-xs md:text-sm tracking-widest shadow-inner transition-all duration-700 ${hourChanged ? "animate-hourPop" : ""} neon-glow`}>
@@ -528,8 +571,8 @@ useEffect(() => {
 <div
   style={{
     position: "absolute",
-    right: 20,
-    bottom: 20,
+    right: "2vw",
+    bottom: "2vh",
     zIndex: 20, // stays above background but below header/links if needed
   }}
   className="w-64"
@@ -571,6 +614,42 @@ useEffect(() => {
         <Image src="/name.png" alt="name plate" width={200} height={80} />
         <input type="text" value={userName} onChange={e => setUserName(e.target.value)} placeholder="Your Name ✿" className={`${festive.className} absolute inset-0 w-full h-full bg-transparent text-black text-2xl text-center outline-none`} />
       </div>
+
+{/* 🐾 Floating Pet (Center Screen) */}
+<div className="absolute left-1/2 top-[60%] sm:top-[58%] md:top-[55%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20">
+
+  {/* Pet */}
+  <div className="text-6xl mb-2">{pet}</div>
+
+  {/* Mood */}
+  <div className="text-sm mb-2 text-green-700 bg-white/70 px-3 py-1 rounded-xl shadow">
+    Mood: {faces[petMood - 1]}
+  </div>
+
+  {/* Feed */}
+  <button
+    onClick={feedPet}
+    className="bg-green-400 text-white px-3 py-1 rounded-lg mb-3 hover:bg-green-500 transition"
+  >
+    Feed 🍓
+  </button>
+
+  {/* Pet Picker */}
+  <div className="flex gap-2 bg-white/70 p-2 rounded-xl shadow">
+    {["🐹","🐶","🐱","🐰","🐻"].map((p, i) => (
+      <button
+        key={i}
+        onClick={() => setPet(p)}
+        className={`text-2xl transition ${
+          pet === p ? "scale-125" : "opacity-60"
+        }`}
+      >
+        {p}
+      </button>
+    ))}
+  </div>
+
+</div>
 
    {/* Mood Tracker Card */}
 <div className="mood-card">
@@ -670,7 +749,7 @@ useEffect(() => {
 )}
 
 {/* To-Do List */}
-<div className="absolute left-4 top-1/2 w-64 bg-white/80 backdrop-blur-sm p-4 rounded-2xl shadow-md -translate-y-1/2"
+<div className="absolute left-2 sm:left-4 top-[55%] sm:top-1/2 w-56 sm:w-64  bg-white/80 backdrop-blur-sm p-4 rounded-2xl shadow-md -translate-y-1/2"
   style={{ backgroundImage: "url('/to-do-bg.jpg')" }}
 >
  
@@ -740,25 +819,25 @@ useEffect(() => {
 ))}
 
 {/* Mini Games Card (Top-Right) */}
-<div className="absolute top-4 right-4 w-56 bg-white/80 backdrop-blur-sm p-3 rounded-2xl shadow-lg z-30">
+<div className="absolute top-2 sm:top-4 right-2 sm:right-4 w-48 sm:w-56 bg-white/80 backdrop-blur-sm p-3 rounded-2xl shadow-lg z-30">
   <h3 className="text-sm font-bold text-pink-400 mb-2 text-center">Mini Games ✿</h3>
 
-{/* Tic-Tac-Toe (Minimal Cozy) */}
-<div className="flex flex-col items-center">
-  <div className="grid grid-cols-3 gap-2 mb-2">
-    {tttBoard.map((cell, i) => (
-      <div
-        key={i}
-        onClick={() => handleTttClick(i)}
-        className="w-12 h-12 flex items-center justify-center 
-        bg-pink-50 hover:bg-pink-100 rounded-lg 
-        text-lg font-bold text-pink-400 
-        cursor-pointer transition"
-      >
-        {cell}
-      </div>
-    ))}
-  </div>
+  {/* Tic-Tac-Toe (Minimal Cozy) */}
+  <div className="flex flex-col items-center">
+    <div className="grid grid-cols-3 gap-2 mb-2">
+      {tttBoard.map((cell, i) => (
+        <div
+          key={i}
+          onClick={() => handleTttClick(i)}
+          className="w-12 h-12 flex items-center justify-center 
+          bg-pink-50 hover:bg-pink-100 rounded-lg 
+          text-lg font-bold text-pink-400 
+          cursor-pointer transition"
+        >
+          {cell}
+        </div>
+      ))}
+    </div>
 
   {/* Turn / Winner */}
   <p className="text-xs text-pink-400">

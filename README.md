@@ -89,8 +89,7 @@ Deployment
 Vercel
 🚀 Live Demo
 
-Live App: https://cozyboard.vercel.app
- (update after deploy if needed)
+Live App: https://cozyboard-xi.vercel.app/room
 Repository: https://github.com/zayanicg/cozyboard
 
 ⚙️ Run Locally
@@ -127,6 +126,6 @@ If you found this project interesting, consider giving it a ⭐
 👤 Author
 
 Zayani Garcia
-Computer Science Graduate & Aspiring Full-Stack Developer
+Computer Science Graduate | Aspiring Full-Stack Developer
 
 GitHub: https://github.com/zayanicg

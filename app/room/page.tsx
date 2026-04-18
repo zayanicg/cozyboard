@@ -179,79 +179,107 @@ const handleCardClick = (index: number) => {
   }, []);
 
 
-
-  // ---------- Fetch Weather ----------
-useEffect(() => {
-    async function getWeather() {
+  useEffect(() => {
+    async function getWeather(lat: number, lon: number) {
       try {
-        // 1️⃣ Get user's location
-        navigator.geolocation.getCurrentPosition(async (pos) => {
-          const lat = pos.coords.latitude;
-          const lon = pos.coords.longitude;
+        // 🌦️ Weather API
+        const res = await fetch(
+          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=apparent_temperature&temperature_unit=fahrenheit&timezone=auto`
+        );
   
-          // 2️⃣ Fetch weather with local timezone
-          const res = await fetch(
-            `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=apparent_temperature&temperature_unit=fahrenheit&timezone=auto`
-          );
-          const data = await res.json();
+        if (!res.ok) throw new Error("Weather API failed");
   
-          const current = data.current_weather;
-          const now = new Date();
-          const currentHour = now.getHours();
+        const data = await res.json();
+        const current = data.current_weather;
   
-          // 3️⃣ Get local "feels like" from hourly apparent_temperature
-          const feels = data.hourly?.apparent_temperature?.[currentHour] ?? current.temperature;
+        const now = new Date();
+        const currentHour = now.getHours();
   
-          // 4️⃣ Map weather code → emoji & condition
-          let emoji = "🌤️";
-          let condition = "Clear";
-          const code = current.weathercode;
+        const feels =
+          data.hourly?.apparent_temperature?.[currentHour] ??
+          current.temperature;
   
-          if ([0].includes(code)) {
-            emoji = "☀️";
-            condition = "Sunny";
-          } else if ([1, 2, 3].includes(code)) {
-            emoji = "🌤️";
-            condition = "Cloudy";
-          } else if ([45, 48].includes(code)) {
-            emoji = "🌫️";
-            condition = "Foggy";
-          } else if ([51, 53, 55, 61, 63, 65].includes(code)) {
-            emoji = "🌧️";
-            condition = "Rainy";
-          } else if ([71, 73, 75].includes(code)) {
-            emoji = "❄️";
-            condition = "Snowy";
-          } else if ([95, 96, 99].includes(code)) {
-            emoji = "⛈️";
-            condition = "Stormy";
-          }
+        // 🌈 Weather mapping
+        let emoji = "🌤️";
+        let condition = "Clear";
+        const code = current.weathercode;
   
-          // 5️⃣ Get city name via Nominatim (OpenStreetMap)
+        if (code === 0) {
+          emoji = "☀️";
+          condition = "Sunny";
+        } else if ([1, 2, 3].includes(code)) {
+          emoji = "🌤️";
+          condition = "Cloudy";
+        } else if ([45, 48].includes(code)) {
+          emoji = "🌫️";
+          condition = "Foggy";
+        } else if ([51, 53, 55, 61, 63, 65].includes(code)) {
+          emoji = "🌧️";
+          condition = "Rainy";
+        } else if ([71, 73, 75].includes(code)) {
+          emoji = "❄️";
+          condition = "Snowy";
+        } else if ([95, 96, 99].includes(code)) {
+          emoji = "⛈️";
+          condition = "Stormy";
+        }
+  
+        // 🌍 Reverse geocoding (FIXED: add headers)
+        let city = "Your City";
+        try {
           const geoRes = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`,
+            {
+              headers: {
+                "User-Agent": "cozy-app (your@email.com)",
+              },
+            }
           );
-          const geoData = await geoRes.json();
-          const city = geoData.address?.city || geoData.address?.town || geoData.address?.village || "Your City";
   
-          // 6️⃣ Update state
-          setWeather({
-            temp: Math.round(current.temperature),
-            feels: Math.round(feels),
-            condition,
-            emoji,
-            city,
-            isDay: current.is_day === 1,
-          });
+          if (geoRes.ok) {
+            const geoData = await geoRes.json();
+            city =
+              geoData.address?.city ||
+              geoData.address?.town ||
+              geoData.address?.village ||
+              "Your City";
+          }
+        } catch {
+          // ignore location name errors
+        }
+  
+        setWeather({
+          temp: Math.round(current.temperature),
+          feels: Math.round(feels),
+          condition,
+          emoji,
+          city,
+          isDay: current.is_day === 1,
         });
       } catch (err) {
-        console.error("Weather fetch failed", err);
+        console.error("Weather fetch failed:", err);
       }
     }
   
-    getWeather();
+    // 📍 Get location SAFELY
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          getWeather(pos.coords.latitude, pos.coords.longitude);
+        },
+        (error) => {
+          console.error("Location denied:", error);
+  
+          // 🚨 Fallback (IMPORTANT for deployment)
+          getWeather(40.7357, -74.1724); // Newark fallback
+        }
+      );
+    } else {
+      // fallback if browser doesn't support location
+      getWeather(40.7357, -74.1724);
+    }
   }, []);
-
+ 
 
   // ---------- Save data ----------
   useEffect(() => {

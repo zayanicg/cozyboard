@@ -121,7 +121,7 @@ git clone https://github.com/zayanicg/cozyboard.git
 cd cozyboard
 npm install
 npm run dev
-📂 Project Structure
+📁 Project Structure
 app/
   page.tsx
 public/
@@ -130,13 +130,14 @@ public/
 styles/
 📸 App Screenshot
 <img src="public/screenshot.png" width="900"/>
-🔮 Future Improvements
-✏️ Edit/update tasks instead of only add/delete
-🔐 User authentication (save data across devices)
-☁️ Database integration (Supabase or Firebase)
-🎨 Theme customization (dark mode, color themes)
-📱 Improved mobile responsiveness
-🤖 AI-powered Tic-Tac-Toe opponent (Minimax algorithm)
+🚀 Future Improvements
+Edit/update tasks instead of only add/delete
+User authentication (save data across devices)
+Database integration (Supabase or Firebase)
+Theme customization (dark mode, color themes)
+Improved mobile responsiveness
+AI-powered Tic-Tac-Toe opponent (Minimax algorithm)
+
 🤝 Feedback
 
 Suggestions, improvements, and ideas are always welcome.

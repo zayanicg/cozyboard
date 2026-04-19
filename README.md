@@ -129,7 +129,10 @@ public/
   images/
 styles/
 📸 App Screenshot
-<img src="public/screenshot.png" width="900"/>
+
+<img src="https://raw.githubusercontent.com/zayanicg/cozyboard/main/public/screenshot.png" width="900"/>
+
+---
 🔮 Future Improvements
 ✏️ Edit/update tasks instead of only add/delete
 🔐 User authentication (save data across devices)

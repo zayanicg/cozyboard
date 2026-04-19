@@ -128,9 +128,10 @@ public/
   screenshot.png
   images/
 styles/
-📸 App Screenshot
 
-<img src="https://raw.githubusercontent.com/zayanicg/cozyboard/main/public/screenshot.png" width="900"/>
+## 📸 App Screenshot
+
+<img src="public/screenshot.png" width="900"/>
 
 ---
 🔮 Future Improvements

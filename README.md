@@ -1,10 +1,10 @@
-🧸 CozyBoard – Personal Cozy Dashboard
+##🧸 CozyBoard – Personal Cozy Dashboard
 
 A cozy, interactive personal dashboard that blends productivity, self-care, and fun into one aesthetic space. Built with Next.js, TypeScript, and Tailwind CSS, this app combines real-time data, local storage persistence, and playful UI elements into a unique “cozy web experience.”
 
 Designed as a creative portfolio project to showcase front-end interactivity, state management, and user-focused design.
 
-🌟 Highlights
+##🌟 Highlights
 
 ✨ Real-time clock + live weather based on location
 📝 Interactive to-do list with animations
@@ -17,7 +17,7 @@ Designed as a creative portfolio project to showcase front-end interactivity, st
 🎨 Fully aesthetic, cozy UI design
 🚀 Deployed on Vercel
 
-🎯 Why I Built This
+##🎯 Why I Built This
 
 I wanted to create something that wasn’t just another dashboard.
 
@@ -71,7 +71,7 @@ Local persistence using localStorage
 Async data fetching (weather + geolocation APIs)
 Responsive design techniques
 Component-based architecture
-🛠 Tech Stack
+##🛠 Tech Stack
 
 Frontend
 
@@ -87,13 +87,13 @@ OpenStreetMap (reverse geocoding)
 Deployment
 
 Vercel
-🚀 Live Demo
+##🚀 Live Demo
 
 Live App: https://cozyboard-xi.vercel.app/room
 
 Repository: https://github.com/zayanicg/cozyboard
 
-⚙️ Run Locally
+##⚙️ Run Locally
 git clone https://github.com/zayanicg/cozyboard.git
 cd cozyboard
 npm install
@@ -113,7 +113,7 @@ styles/
 
 ---
 
-🔮 Future Improvements
+##🔮 Future Improvements
 ✏️ Edit/update tasks instead of only add/delete
 🔐 User authentication (save data across devices)
 ☁️ Database integration (Supabase or Firebase)
@@ -130,7 +130,7 @@ Feel free to open an issue or contribute to the project.
 
 If you found this project interesting, consider giving it a ⭐
 
-👤 Author
+##👤 Author
 
 Zayani Garcia
 Computer Science Graduate | Aspiring Full-Stack Developer
